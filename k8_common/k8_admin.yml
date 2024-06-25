@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: local
+  labels:
+    run: miniadmin
+  name: miniadmin
+spec:
+  selector:
+    matchLabels:
+      app: miniadmin
+  replicas: 1
+  revisionHistoryLimit: 2
+  template:
+    metadata:
+      labels:
+        app: miniadmin
+    spec:
+      containers:
+        - name: miniadmin
+          image: jasonly000/dockerhub.miniadmin:v1.1
+          command: [ "gunicorn", "--bind", "0.0.0.0:8008", "--workers", "1", "--timeout", "300", "mini_admin.wsgi:application" ]
+#          imagePullPolicy: Always
+
+          ports:
+            - name: admin-port
+              containerPort: 8008
+
+          resources:
+            limits:
+              memory: 512Mi
+              cpu: "1"
+            requests:
+              memory: 256Mi
+              cpu: "0.2"
+
+          volumeMounts:
+            - name: vol-mini
+              mountPath: /mini
+
+      volumes:
+        - name: vol-mini
+          hostPath:
+            path: /mini

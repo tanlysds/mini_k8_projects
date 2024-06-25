@@ -1,0 +1,20 @@
+FROM python:3.8
+
+ENV PYTHONBUFFERED=1
+
+RUN apt-get update && apt-get install -y
+
+
+WORKDIR /app
+COPY ./ministore /app
+
+COPY ./ministore/requirements.txt /tmp
+
+
+
+RUN pip3 install --upgrade pip && pip3 install -r /tmp/requirements.txt
+
+RUN pip3 install fastapi uvicorn
+
+
+CMD ["bash"]

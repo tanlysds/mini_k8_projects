@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  miniadmin:
+    image: jasonly000/dockerhub.miniadmin:v1.0
+    working_dir: /app
+    expose:
+      - 8006
+    ports:
+      - "8006:8006"
+    restart: always
+    volumes:
+      - /mini:/mini
+      - ./app/staticfiles:/app/staticfiles
+    command: gunicorn --bind 0.0.0.0:8006 --workers 1 mini_admin.wsgi:application
+      

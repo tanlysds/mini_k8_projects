@@ -1,0 +1,14 @@
+FROM node:16-alpine
+RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache --upgrade bash
+
+WORKDIR /app
+
+COPY ./frontend/package.json ./frontend/package-lock.json* ./
+RUN npm install --save-dev @babel/plugin-proposal-private-property-in-object --legacy-peer-deps
+RUN npm install immutable --force
+
+COPY ./frontend /app
+
+CMD ["sh"]
+

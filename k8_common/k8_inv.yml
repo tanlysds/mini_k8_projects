@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: local
+  labels:
+    run: miniinv
+  name: miniinv
+spec:
+  selector:
+    matchLabels:
+      app: miniinv
+  replicas: 1
+  revisionHistoryLimit: 2
+  template:
+    metadata:
+      labels:
+        app: miniinv
+    spec:
+      containers:
+        - name: miniinv
+          image: jasonly000/dockerhub.miniinv:v1.1
+          command: [ "npm", "run", "start"]
+
+          ports:
+            - name: inv-port
+              containerPort: 3003
+
+          resources:
+            limits:
+              memory: 512Mi
+              cpu: "1"
+            requests:
+              memory: 256Mi
+              cpu: "0.2"
+
+          volumeMounts:
+            - name: vol-mini
+              mountPath: /mini
+
+      volumes:
+        - name: vol-mini
+          hostPath:
+            path: /mini

@@ -1,0 +1,18 @@
+version: '3'
+services:
+  web-viewer:
+    image: jasonly000/dockerhub.ministore:v1.0
+    restart: always
+    working_dir: /app
+    # env_file:
+    #   - ./app/settings/.env
+    # volumes:
+    #   - ./app/settings/:/app/settings/
+    #   - ./app/backend/web-viewer/static:/app/backend/web-viewer/static
+    #   - /sds-filestore1:/sds-filestore1
+    command: uvicorn main:app --host 0.0.0.0 --port 4004
+    ports:
+      - "4004:4004"
+    expose:
+      - 4004
+

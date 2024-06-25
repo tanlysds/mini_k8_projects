@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: local
+  labels:
+    run: ministore
+  name: ministore
+spec:
+  selector:
+    matchLabels:
+      app: ministore
+  replicas: 1
+  revisionHistoryLimit: 2
+  template:
+    metadata:
+      labels:
+        app: ministore
+    spec:
+      containers:
+        - name: ministore
+          image: jasonly000/dockerhub.ministore:v1.0
+          # uvicorn main:app --host 0.0.0.0 --port 4004
+          command: [ "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "4004" ]
+#          imagePullPolicy: Always
+
+          # env:
+          #   - name: POD_IP
+          #     valueFrom:
+          #       fieldRef:
+          #         apiVersion: v1
+          #         fieldPath: status.podIP
+
+          ports:
+            - name: store-port
+              containerPort: 4004
+
+          resources:
+            limits:
+              memory: 512Mi
+              cpu: "1"
+            requests:
+              memory: 256Mi
+              cpu: "0.2"
+
+          volumeMounts:
+            - name: vol-mini
+              mountPath: /mini
+
+      volumes:
+        - name: vol-mini
+          hostPath:
+            path: /mini

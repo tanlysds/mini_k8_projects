@@ -1,0 +1,14 @@
+FROM jasonly000/dockerhub.ministore:v1.0
+ENV PYTHONBUFFERED=1
+
+WORKDIR /app
+COPY ./ministore /app
+
+COPY ./ministore/requirements.txt /tmp
+
+
+
+RUN pip3 install --upgrade pip && pip3 install -r /tmp/requirements.txt
+
+RUN pip3 install fastapi uvicorn
+

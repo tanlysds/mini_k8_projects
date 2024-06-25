@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  miniadmin:
+    image: jasonly000/dockerhub.miniinv:v1.1
+    working_dir: /app
+    expose:
+      - 3003
+    ports:
+      - "3003:3003"
+    restart: always
+    command: npm run start
+      
