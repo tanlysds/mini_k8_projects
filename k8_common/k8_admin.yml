@@ -18,9 +18,10 @@ spec:
     spec:
       containers:
         - name: miniadmin
-          image: jasonly000/dockerhub.miniadmin:v1.1
-          command: [ "gunicorn", "--bind", "0.0.0.0:8008", "--workers", "1", "--timeout", "300", "mini_admin.wsgi:application" ]
-#          imagePullPolicy: Always
+          image: jasonly000/dockerhub.miniadmin:v1.2
+          command: ["/bin/sh","-c"]
+          args: ["python3 manage.py collectstatic --noinput && gunicorn --bind 0.0.0.0:8008 --workers 1 --timeout 300 mini_admin.wsgi:application"]
+          # command: [ "gunicorn", "--bind", "0.0.0.0:8008", "--workers", "1", "--timeout", "300", "mini_admin.wsgi:application" ]
 
           ports:
             - name: admin-port
@@ -38,7 +39,70 @@ spec:
             - name: vol-mini
               mountPath: /mini
 
+            - name: vol-static
+              mountPath: /app/static
+
+            - name: vol-media
+              mountPath: /app/media
+
+            - name: vol-upload
+              mountPath: /app/upload
+
       volumes:
         - name: vol-mini
           hostPath:
-            path: /mini
+            path: /mini/
+
+        - name: vol-static
+          hostPath:
+            path: /mini/miniadmin/static
+
+        - name: vol-media
+          hostPath:
+            path: /mini/miniadmin/media
+
+        - name: vol-upload
+          hostPath:
+            path: /mini/miniadmin/upload
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: admin-svc
+  namespace: local
+spec:
+  ports:
+  - port: 8008
+    targetPort: 8008
+    protocol: TCP
+  selector:
+    app: miniadmin
+  type: NodePort
+---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   namespace: local
+#   name: admin-ingress
+#   annotations:
+#     kubernetes.io/ingress.class: "nginx"
+#     nginx.ingress.kubernetes.io/proxy-body-size: 512m
+#     nginx.ingress.kubernetes.io/proxy-read-timeout: "1200"
+#     nginx.ingress.kubernetes.io/proxy-send-timeout: "1200"
+#     nginx.ingress.kubernetes.io/proxy-connect-timeout: "1200"
+# spec:
+#   ingressClassName: nginx
+#   tls:
+#   - hosts:
+#     - localhost
+#   rules:
+#   - host: localhost
+#     http:
+#       paths:
+#       - path: /
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: admin-svc
+#             port:
+#               number: 8008

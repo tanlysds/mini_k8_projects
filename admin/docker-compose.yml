@@ -2,15 +2,28 @@ version: '3'
 
 services:
   miniadmin:
-    image: jasonly000/dockerhub.miniadmin:v1.0
+    image: jasonly000/dockerhub.miniadmin:v1.2
     working_dir: /app
     expose:
-      - 8006
+      - 8008
     ports:
-      - "8006:8006"
+      - "8008:8008"
     restart: always
     volumes:
       - /mini:/mini
       - ./app/staticfiles:/app/staticfiles
-    command: gunicorn --bind 0.0.0.0:8006 --workers 1 mini_admin.wsgi:application
+    command: gunicorn --bind 0.0.0.0:8008 --workers 1 mini_admin.wsgi:application
+
+  nginx:
+    image: nginx:1.13
+    ports:
+      - 8081:8081
+    restart: always
+    volumes:
+      - ./miniadmin/nginx_admin/conf.d:/etc/nginx/conf.d
+      - ./miniadmin/static:/app/static
+      - ./miniadmin/media:/app/media
+      - ./miniadmin/uploads:/app/uploads
+    depends_on:
+      - miniadmin
       
