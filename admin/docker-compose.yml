@@ -14,6 +14,19 @@ services:
       - ./app/staticfiles:/app/staticfiles
     command: gunicorn --bind 0.0.0.0:8008 --workers 1 mini_admin.wsgi:application
 
+  miniadmin_mining_queue:
+    image: jasonly000/dockerhub.miniadmin:v1.2
+    command: celery -A mini_admin.celery_app worker -Q mining_queue -n mini_admin@mining_queue --loglevel=INFO -B 
+    restart: always
+    # volumes:
+    #   - /sds-filestore1/sds_admin/media:/app/media
+    #   - /sds-filestore1:/sds-filestore1
+    #   - /sds-filestore1/tmp/sds_admin:/tmp
+    # env_file:
+    #   - ./.env_job
+    depends_on:
+      - miniadmin
+
   nginx:
     image: nginx:1.13
     ports:

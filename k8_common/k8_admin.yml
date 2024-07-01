@@ -16,13 +16,13 @@ spec:
       labels:
         app: miniadmin
     spec:
+      imagePullSecrets:
+        - name: regcred-local
       containers:
         - name: miniadmin
           image: jasonly000/dockerhub.miniadmin:v1.2
           command: ["/bin/sh","-c"]
           args: ["python3 manage.py collectstatic --noinput && gunicorn --bind 0.0.0.0:8008 --workers 1 --timeout 300 mini_admin.wsgi:application"]
-          # command: [ "gunicorn", "--bind", "0.0.0.0:8008", "--workers", "1", "--timeout", "300", "mini_admin.wsgi:application" ]
-
           ports:
             - name: admin-port
               containerPort: 8008
@@ -78,6 +78,80 @@ spec:
   selector:
     app: miniadmin
   type: NodePort
+---
+apiVersion: v1
+data:
+  .dockerconfigjson: ewoJImF1dGhzIjogewoJCSJodHRwczovL2luZGV4LmRvY2tlci5pby92MS8iOiB7CgkJCSJhdXRoIjogImFtRnpiMjVzZVRBd01EcEJWRUpDVG5JMFdrUjNRVzQ0T1RWUVdHZzRkSGMzVFhkR1ZtZHVOelEyTmpSR056UT0iCgkJfQoJfQp9
+kind: Secret
+metadata:
+  creationTimestamp: "2024-07-01T06:59:50Z"
+  name: regcred-local
+  namespace: local
+  resourceVersion: "1312248"
+  uid: dfb587fb-627e-48c1-8da5-6c669fc4d8cf
+type: kubernetes.io/dockerconfigjson
+---
+#### Celery Beat
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: local
+  name: mini-admin-beat
+  labels:
+    app: mini-admin-beat
+spec:
+  selector:
+    matchLabels:
+      app: mini-admin-beat
+  replicas: 1
+  revisionHistoryLimit: 2
+  template:
+    metadata:
+      labels:
+        app: mini-admin-beat
+    spec:
+      serviceAccountName: default
+      terminationGracePeriodSeconds: 5
+      nodeSelector:
+        service: worker
+      # imagePullSecrets:
+      # - name: sds-docker-registry
+      containers:
+      - image: jasonly000/dockerhub.miniadmin:v1.2
+        command: ["celery", "-A", "mini_admin.celery_app", "beat", "--loglevel=ERROR"]
+        # imagePullPolicy: Always
+        name: mini-admin-beat
+        # envFrom:
+        #   - secretRef:
+        #       name: sds-admin
+        volumeMounts:
+          - name: vol-mini
+            mountPath: /mini
+
+          - name: vol-static
+            mountPath: /app/static
+
+          - name: vol-media
+            mountPath: /app/media
+
+          - name: vol-upload
+            mountPath: /app/upload
+      volumes:
+        - name: vol-mini
+          hostPath:
+            path: /mini/
+
+        - name: vol-static
+          hostPath:
+            path: /mini/miniadmin/static
+
+        - name: vol-media
+          hostPath:
+            path: /mini/miniadmin/media
+
+        - name: vol-upload
+          hostPath:
+            path: /mini/miniadmin/upload
 ---
 # apiVersion: networking.k8s.io/v1
 # kind: Ingress
